@@ -1,0 +1,6 @@
+.. change::
+    :tags: change, sql, sybase
+    :tickets: 5294
+
+    Added .offset support to sybase dialect via START AT.
+    Pull request courtesy Alan D. Snow.
