@@ -2863,6 +2863,7 @@ class MSDialect(default.DefaultDialect):
         json_serializer=None,
         json_deserializer=None,
         legacy_schema_aliasing=None,
+        xact_abort=None,
         **opts,
     ):
         self.query_timeout = int(query_timeout or 0)
@@ -2879,6 +2880,8 @@ class MSDialect(default.DefaultDialect):
             )
             self.legacy_schema_aliasing = legacy_schema_aliasing
 
+        self.xact_abort = xact_abort
+
         super(MSDialect, self).__init__(**opts)
 
         self._json_serializer = json_serializer
@@ -2892,6 +2895,9 @@ class MSDialect(default.DefaultDialect):
     def do_release_savepoint(self, connection, name):
         # SQL Server does not support RELEASE SAVEPOINT
         pass
+
+    def do_rollback(self, dbapi_connection):
+        super(MSDialect, self).do_rollback(dbapi_connection)
 
     _isolation_lookup = set(
         [

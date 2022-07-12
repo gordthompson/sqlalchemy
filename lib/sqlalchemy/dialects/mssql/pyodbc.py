@@ -310,8 +310,11 @@ examples.
 
 import datetime
 import decimal
+import logging
 import re
 import struct
+
+from pyodbc import ProgrammingError
 
 from .base import _MSDateTime
 from .base import _MSUnicode
@@ -691,6 +694,23 @@ class MSDialect_pyodbc(PyODBCConnector, MSDialect):
         return super(MSDialect_pyodbc, self).is_disconnect(
             e, connection, cursor
         )
+
+    def do_rollback(self, dbapi_connection):
+        if self.xact_abort:
+            try:
+                super(MSDialect_pyodbc, self).do_rollback(dbapi_connection)
+            except ProgrammingError as e:
+                err_num = "111214"
+                if f" ({err_num}) " in e.args[1]:
+                    logging.info(
+                        f"pyodbc.ProgrammingError {err_num} "
+                        "'No corresponding transaction found.' "
+                        "has been suppressed via xact_abort=True"
+                    )
+                else:
+                    raise
+        else:
+            super(MSDialect_pyodbc, self).do_rollback(dbapi_connection)
 
 
 dialect = MSDialect_pyodbc
